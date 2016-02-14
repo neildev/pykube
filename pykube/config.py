@@ -19,6 +19,12 @@ class KubeConfig(object):
 
     @classmethod
     def from_service_account(cls):
+        try:
+            kube_service_proto = os.environ["KUBERNETES_SERVICE_PROTOCOL"]
+        except KeyError:
+            kube_service_proto = 'https'
+
+
         path = "/var/run/secrets/kubernetes.io/serviceaccount"
         with open(os.path.join(path, "token")) as fp:
             token = fp.read()
@@ -27,7 +33,8 @@ class KubeConfig(object):
                 {
                     "name": "self",
                     "cluster": {
-                        "server": "https://{}:{}".format(
+                        "server": "{}://{}:{}".format(
+                            kube_service_proto,
                             os.environ["KUBERNETES_SERVICE_HOST"],
                             os.environ["KUBERNETES_SERVICE_PORT"],
                         ),
